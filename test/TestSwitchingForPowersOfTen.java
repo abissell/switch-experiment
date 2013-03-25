@@ -176,31 +176,31 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			case 26:
-				return val * 8;
+				return val * 1000000000000000000L * 100000000;
 			case 27:
-				return val * 9;
+				return val * 1000000000000000000L * 1000000000;
 			case 28:
-				return val * 11;
+				return val * 1000000000000000000L * 10000000000L;
 			case 29:
-				return val * 12;
+				return val * 1000000000000000000L * 100000000000L;
 			case 30:
-				return val * 13;
+				return val * 1000000000000000000L * 1000000000000L;
 			case 31:
-				return val * 14;
+				return val * 1000000000000000000L * 10000000000000L;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -269,29 +269,29 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			case 26:
-				return val * 8;
+				return val * 1000000000000000000L * 100000000;
 			case 27:
-				return val * 9;
+				return val * 1000000000000000000L * 1000000000;
 			case 28:
-				return val * 11;
+				return val * 1000000000000000000L * 10000000000L;
 			case 29:
-				return val * 12;
+				return val * 1000000000000000000L * 100000000000L;
 			case 30:
-				return val * 13;
+				return val * 1000000000000000000L * 1000000000000L;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -360,27 +360,27 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			case 26:
-				return val * 8;
+				return val * 1000000000000000000L * 100000000;
 			case 27:
-				return val * 9;
+				return val * 1000000000000000000L * 1000000000;
 			case 28:
-				return val * 11;
+				return val * 1000000000000000000L * 10000000000L;
 			case 29:
-				return val * 12;
+				return val * 1000000000000000000L * 100000000000L;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -449,25 +449,25 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			case 26:
-				return val * 8;
+				return val * 1000000000000000000L * 100000000;
 			case 27:
-				return val * 9;
+				return val * 1000000000000000000L * 1000000000;
 			case 28:
-				return val * 11;
+				return val * 1000000000000000000L * 10000000000L;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -536,23 +536,23 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			case 26:
-				return val * 8;
+				return val * 1000000000000000000L * 100000000;
 			case 27:
-				return val * 9;
+				return val * 1000000000000000000L * 1000000000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -621,21 +621,21 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			case 26:
-				return val * 8;
+				return val * 1000000000000000000L * 100000000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -704,19 +704,19 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			case 25:
-				return val * 7;
+				return val * 1000000000000000000L * 10000000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -785,17 +785,17 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			case 24:
-				return val * 6;
+				return val * 1000000000000000000L * 1000000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -864,15 +864,15 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			case 23:
-				return val * 5;
+				return val * 1000000000000000000L * 100000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -941,13 +941,13 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			case 22:
-				return val * 4;
+				return val * 1000000000000000000L * 10000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -1016,11 +1016,11 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			case 21:
-				return val * 3;
+				return val * 1000000000000000000L * 1000;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -1089,9 +1089,9 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			case 20:
-				return val * 2;
+				return val * 1000000000000000000L * 100;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
@@ -1160,7 +1160,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			case 18:
 				return val*1000000000000000000L;
 			case 19:
-				return val * 15;
+				return val * 1000000000000000000L * 10;
 			default:
 				throw new ParseException("Unhandled power of ten: " + power, 0);
 		}
