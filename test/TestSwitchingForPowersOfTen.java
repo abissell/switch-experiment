@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	private static final int TESTS_PER_ITER = 10000;
 	private static final int NUM_ITER = 1000;
-	private static final int MAX_POWER = 10;
+	private static final int MAX_POWER = 9;
 	private static final Random RANDOM_INT = new Random(System.currentTimeMillis());
 	private static final int randomInt(final int n) {
 		return RANDOM_INT.nextInt(n);
@@ -114,7 +114,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test32CaseSwitchingRaiseToPowersOfTen() {
+	public void test32CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 32;
 		if (MAX_POWER > numCases)
 			return;
@@ -124,8 +124,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case32RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case32MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -134,7 +134,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case32RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case32MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -207,7 +207,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test31CaseSwitchingRaiseToPowersOfTen() {
+	public void test31CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 31;
 		if (MAX_POWER > numCases)
 			return;
@@ -217,8 +217,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case31RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case31MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -227,7 +227,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case31RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case31MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -298,7 +298,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test30CaseSwitchingRaiseToPowersOfTen() {
+	public void test30CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 30;
 		if (MAX_POWER > numCases)
 			return;
@@ -308,8 +308,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case30RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case30MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -318,7 +318,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case30RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case30MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -387,7 +387,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test29CaseSwitchingRaiseToPowersOfTen() {
+	public void test29CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 29;
 		if (MAX_POWER > numCases)
 			return;
@@ -397,8 +397,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case29RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case29MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -407,7 +407,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case29RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case29MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -474,7 +474,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test28CaseSwitchingRaiseToPowersOfTen() {
+	public void test28CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 28;
 		if (MAX_POWER > numCases)
 			return;
@@ -484,8 +484,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case28RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case28MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -494,7 +494,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case28RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case28MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -559,7 +559,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test27CaseSwitchingRaiseToPowersOfTen() {
+	public void test27CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 27;
 		if (MAX_POWER > numCases)
 			return;
@@ -569,8 +569,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case27RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case27MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -579,7 +579,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 	
-	private static double case27RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case27MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -642,7 +642,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test26CaseSwitchingRaiseToPowersOfTen() {
+	public void test26CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 26;
 		if (MAX_POWER > numCases)
 			return;
@@ -652,8 +652,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case26RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case26MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -662,7 +662,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case26RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case26MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -723,7 +723,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test25CaseSwitchingRaiseToPowersOfTen() {
+	public void test25CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 25;
 		if (MAX_POWER > numCases)
 			return;
@@ -733,8 +733,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case25RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case25MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -743,7 +743,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case25RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case25MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -802,7 +802,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test24CaseSwitchingRaiseToPowersOfTen() {
+	public void test24CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 24;
 		if (MAX_POWER > numCases)
 			return;
@@ -812,8 +812,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case24RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case24MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -822,7 +822,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case24RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case24MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -879,7 +879,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test23CaseSwitchingRaiseToPowersOfTen() {
+	public void test23CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 23;
 		if (MAX_POWER > numCases)
 			return;
@@ -889,8 +889,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case23RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case23MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -899,7 +899,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case23RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case23MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -954,7 +954,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test22CaseSwitchingRaiseToPowersOfTen() {
+	public void test22CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 22;
 		if (MAX_POWER > numCases)
 			return;
@@ -964,8 +964,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case22RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case22MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -974,7 +974,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case22RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case22MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1027,7 +1027,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test21CaseSwitchingRaiseToPowersOfTen() {
+	public void test21CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 21;
 		if (MAX_POWER > numCases)
 			return;
@@ -1037,8 +1037,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case21RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case21MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1047,7 +1047,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case21RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case21MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1098,7 +1098,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test20CaseSwitchingRaiseToPowersOfTen() {
+	public void test20CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 20;
 		if (MAX_POWER > numCases)
 			return;
@@ -1108,8 +1108,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case20RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case20MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1118,7 +1118,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case20RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case20MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1167,7 +1167,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test19CaseSwitchingRaiseToPowersOfTen() {
+	public void test19CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 19;
 		if (MAX_POWER > numCases)
 			return;
@@ -1177,8 +1177,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case19RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case19MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1187,7 +1187,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case19RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case19MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1234,7 +1234,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test18CaseSwitchingRaiseToPowersOfTen() {
+	public void test18CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 18;
 		if (MAX_POWER > numCases)
 			return;
@@ -1244,8 +1244,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case18RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case18MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1254,7 +1254,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case18RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case18MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1299,7 +1299,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test17CaseSwitchingRaiseToPowersOfTen() {
+	public void test17CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 17;
 		if (MAX_POWER > numCases)
 			return;
@@ -1309,8 +1309,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case17RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case17MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1319,7 +1319,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case17RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case17MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1362,7 +1362,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test16CaseSwitchingRaiseToPowersOfTen() {
+	public void test16CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 16;
 		if (MAX_POWER > numCases)
 			return;
@@ -1372,8 +1372,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case16RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case16MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1382,7 +1382,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case16RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case16MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1423,7 +1423,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test15CaseSwitchingRaiseToPowersOfTen() {
+	public void test15CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 15;
 		if (MAX_POWER > numCases)
 			return;
@@ -1433,8 +1433,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case15RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case15MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1443,7 +1443,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case15RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case15MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1482,7 +1482,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test14CaseSwitchingRaiseToPowersOfTen() {
+	public void test14CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 14;
 		if (MAX_POWER > numCases)
 			return;
@@ -1492,8 +1492,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case14RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case14MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1502,7 +1502,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case14RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case14MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1539,7 +1539,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test13CaseSwitchingRaiseToPowersOfTen() {
+	public void test13CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 13;
 		if (MAX_POWER > numCases)
 			return;
@@ -1549,8 +1549,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case13RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case13MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1559,7 +1559,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case13RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case13MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1594,7 +1594,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test12CaseSwitchingRaiseToPowersOfTen() {
+	public void test12CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 12;
 		if (MAX_POWER > numCases)
 			return;
@@ -1604,8 +1604,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case12RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case12MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1614,7 +1614,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case12RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case12MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1647,7 +1647,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test11CaseSwitchingRaiseToPowersOfTen() {
+	public void test11CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 11;
 		if (MAX_POWER > numCases)
 			return;
@@ -1657,8 +1657,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case11RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case11MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1667,7 +1667,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case11RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case11MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1698,7 +1698,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test10CaseSwitchingRaiseToPowersOfTen() {
+	public void test10CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 10;
 		if (MAX_POWER > numCases)
 			return;
@@ -1708,8 +1708,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case10RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case10MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1718,7 +1718,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case10RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case10MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1747,7 +1747,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test9CaseSwitchingRaiseToPowersOfTen() {
+	public void test9CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 9;
 		if (MAX_POWER > numCases)
 			return;
@@ -1757,8 +1757,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case9RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case9MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1767,7 +1767,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case9RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case9MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1794,7 +1794,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test8CaseSwitchingRaiseToPowersOfTen() {
+	public void test8CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 8;
 		if (MAX_POWER > numCases)
 			return;
@@ -1804,8 +1804,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case8RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case8MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1814,7 +1814,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case8RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case8MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1839,7 +1839,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test7CaseSwitchingRaiseToPowersOfTen() {
+	public void test7CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 7;
 		if (MAX_POWER > numCases)
 			return;
@@ -1849,8 +1849,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case7RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case7MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1859,7 +1859,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case7RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case7MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1882,7 +1882,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test6CaseSwitchingRaiseToPowersOfTen() {
+	public void test6CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 6;
 		if (MAX_POWER > numCases)
 			return;
@@ -1892,8 +1892,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case6RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case6MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1902,7 +1902,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case6RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case6MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1923,7 +1923,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test5CaseSwitchingRaiseToPowersOfTen() {
+	public void test5CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 5;
 		if (MAX_POWER > numCases)
 			return;
@@ -1933,8 +1933,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case5RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case5MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1943,7 +1943,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case5RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case5MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1962,7 +1962,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test4CaseSwitchingRaiseToPowersOfTen() {
+	public void test4CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 4;
 		if (MAX_POWER > numCases)
 			return;
@@ -1972,8 +1972,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case4RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case4MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -1982,7 +1982,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case4RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case4MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -1999,7 +1999,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test3CaseSwitchingRaiseToPowersOfTen() {
+	public void test3CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 3;
 		if (MAX_POWER > numCases)
 			return;
@@ -2009,8 +2009,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case3RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case3MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -2019,7 +2019,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case3RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case3MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -2034,7 +2034,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test2CaseSwitchingRaiseToPowersOfTen() {
+	public void test2CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 2;
 		if (MAX_POWER > numCases)
 			return;
@@ -2044,8 +2044,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case2RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case2MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -2054,7 +2054,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case2RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case2MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -2067,7 +2067,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test1CaseSwitchingRaiseToPowersOfTen() {
+	public void test1CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 1;
 		if (MAX_POWER > numCases)
 			return;
@@ -2077,8 +2077,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case1RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case1MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -2087,7 +2087,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case1RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case1MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			case 0:
@@ -2098,7 +2098,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	}
 
 	@Test
-	public void test0CaseSwitchingRaiseToPowersOfTen() {
+	public void test0CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 0;
 		if (MAX_POWER > numCases)
 			return;
@@ -2108,8 +2108,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			for (int i = 0; i < NUM_ITER; i++) {
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
-					final double raised = case0RaiseToPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) raised;
+					final double multiplied = case0MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+					final long cast = (long) multiplied;
 					RESULT[numCases] += cast;
 				}
 			}
@@ -2118,7 +2118,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private static double case0RaiseToPowerOfTen(double val, int power) throws ParseException {
+	private static double case0MultiplyByPowerOfTen(double val, int power) throws ParseException {
 		switch (power)
 		{
 			default:
