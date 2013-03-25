@@ -3,6 +3,8 @@ SWITCH-EXPERIMENT BENCHMARK RESULTS:
 TESTS_PER_ITER = 20000
 NUM_ITER = 1000
 
+Compiled with Java version 1.7.0_15
+
 ===========================================================================================
 
 MAX_POWER = 1
