@@ -12,7 +12,7 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	private static final boolean THROW_EXCEPTION_FROM_DEFAULT = false;
 	private static final int TESTS_PER_ITER = 20000;
 	private static final int NUM_ITER = 1000;
-	private static final int MAX_POWER = 10;
+	private static final int MAX_POWER = 9;
 
 	private static final int[] RANDOM_INTS = new int[TESTS_PER_ITER];
 	private static final double[] RANDOM_DOUBLES = new double[TESTS_PER_ITER];

@@ -9,7 +9,7 @@ import java.text.ParseException;
 @SuppressWarnings("ConstantConditions")
 public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark {
 	private static final boolean THROW_EXCEPTION_FROM_DEFAULT = true;
-	private static final int TESTS_PER_ITER = 10000;
+	private static final int TESTS_PER_ITER = 20000;
 	private static final int NUM_ITER = 1000;
 	private static final int MAX_POWER = 9;
 
