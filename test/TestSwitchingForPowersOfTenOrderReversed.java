@@ -5,22 +5,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.text.ParseException;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("ConstantConditions")
 public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark {
+	private static final boolean THROW_EXCEPTION_FROM_DEFAULT = true;
 	private static final int TESTS_PER_ITER = 10000;
 	private static final int NUM_ITER = 1000;
 	private static final int MAX_POWER = 9;
-	private static final Random RANDOM_INT = new Random(System.currentTimeMillis());
-	private static final int randomInt(final int n) {
-		return RANDOM_INT.nextInt(n);
-	}
-//  	private static final AtomicPsuedoRandom RANDOM_INT = new AtomicPsuedoRandom((int) System.currentTimeMillis());
-//	private static final int randomInt(final int n) {
-//		return RANDOM_INT.nextInt(n) - 1;
-//	}
-	private static final Random RANDOM_LONG = new Random(System.currentTimeMillis());
+
 	private static final int[] RANDOM_INTS = new int[TESTS_PER_ITER];
 	private static final double[] RANDOM_DOUBLES = new double[TESTS_PER_ITER];
 	private static final int MAX_NUM_CASES = 32;
@@ -38,35 +30,38 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 	public static void setup() {
 		fillRandomInts();
 		fillRandomDoubles();
-//		System.out.print("First 20 random ints: ");
-//		for (int i = 0; i < 20; i++) {
-//			if (i == 19)
-//				System.out.println(RANDOM_INTS[i]);
-//			else
-//				System.out.print(RANDOM_INTS[i] + ", ");
-//		}
-
-//		System.out.print("First 20 random doubles: ");
-//		for (int i = 0; i < 20; i++) {
-//			if (i == 19)
-//				System.out.println(RANDOM_DOUBLES[i]);
-//			else
-//				System.out.print(RANDOM_DOUBLES[i] + ", ");
-//		}
-//
-//		System.out.println("Starting tests.");
+		// printCheckRandoms();
+		System.out.println("Starting tests.");
 	}
 
 	private static void fillRandomInts() {
 		for (int i = 0; i < TESTS_PER_ITER; i++) {
-			RANDOM_INTS[i] = randomInt(MAX_POWER);
+			RANDOM_INTS[i] = RandomFactory.randomInt(MAX_POWER);
 		}
 	}
 
 	private static void fillRandomDoubles() {
 		for (int i = 0; i < TESTS_PER_ITER; i++) {
-			final long randomLong = RANDOM_LONG.nextLong();
-			RANDOM_DOUBLES[i] = Double.longBitsToDouble(randomLong);
+			RANDOM_DOUBLES[i] = RandomFactory.randomDouble();
+		}
+	}
+
+	@SuppressWarnings("UnusedDeclaration")
+	private static void printCheckRandoms() {
+		System.out.print("First 20 random ints: ");
+		for (int i = 0; i < 20; i++) {
+			if (i == 19)
+				System.out.println(RANDOM_INTS[i]);
+			else
+				System.out.print(RANDOM_INTS[i] + ", ");
+		}
+
+		System.out.print("First 20 random doubles: ");
+		for (int i = 0; i < 20; i++) {
+			if (i == 19)
+				System.out.println(RANDOM_DOUBLES[i]);
+			else
+				System.out.print(RANDOM_DOUBLES[i] + ", ");
 		}
 	}
 
@@ -84,35 +79,6 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 		}
 	}
 
-	// cf. JCIP 12.1.3 by Goetz et al
-	private static final class AtomicPsuedoRandom {
-		private final AtomicInteger seed;
-
-		private AtomicPsuedoRandom(final int seed) {
-			this.seed = new AtomicInteger(seed);
-		}
-
-		public final int nextInt(final int n) {
-			while (true) {
-				final int s = seed.get();
-				final int nextSeed = xorShift(s);
-				if (seed.compareAndSet(s, nextSeed)) {
-					final int remainder = s % n;
-					return remainder > 0 ? remainder : remainder + n;
-				}
-			}
-		}
-	}
-
-	// cf. JCIP 12.1.3 by Goetz et al
-	private static int xorShift(int y) {
-		y ^= (y << 6);
-		y ^= (y >>> 21);
-		y ^= (y << 7);
-
-		return y;
-	}
-
 	@Test
 	public void test0CaseSwitchingMultiplyByPowersOfTen() {
 		final int numCases = 0;
@@ -125,8 +91,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case0MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -134,11 +100,14 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 		}
 	}
 
-	private static double case0MultiplyByPowerOfTen(double val, int power) throws ParseException {
+	private static double case0MultiplyByPowerOfTen(@SuppressWarnings("UnusedParameters") double val, int power) throws ParseException {
 		switch (power)
 		{
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -154,8 +123,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case1MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -169,7 +138,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 0:
 				return val;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -185,8 +157,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case2MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -202,7 +174,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 1:
 				return val*10;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -218,8 +193,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case3MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -237,7 +212,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 2:
 				return val*100;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -253,8 +231,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case4MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -274,7 +252,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 3:
 				return val*1000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -290,8 +271,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case5MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -313,7 +294,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 4:
 				return val*10000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -329,8 +313,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case6MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -354,7 +338,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 5:
 				return val*100000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -370,8 +357,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case7MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -397,7 +384,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 6:
 				return val*1000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -413,8 +403,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case8MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -442,7 +432,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 7:
 				return val*10000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -458,8 +451,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case9MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -489,7 +482,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 8:
 				return val*100000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -505,8 +501,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case10MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -538,7 +534,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 9:
 				return val*1000000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -554,8 +553,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case11MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -589,7 +588,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 10:
 				return val*10000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -605,8 +607,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case12MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -642,7 +644,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 11:
 				return val*100000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -658,8 +663,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case13MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -697,7 +702,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 12:
 				return val*1000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -713,8 +721,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case14MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -754,7 +762,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 13:
 				return val*10000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -770,8 +781,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case15MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -813,7 +824,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 14:
 				return val*100000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -829,8 +843,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case16MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -874,7 +888,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 15:
 				return val*1000000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -890,8 +907,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case17MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -937,7 +954,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 16:
 				return val*10000000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -953,8 +973,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case18MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1002,7 +1022,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 17:
 				return val*100000000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1018,8 +1041,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case19MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1069,7 +1092,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 18:
 				return val*1000000000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1085,8 +1111,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case20MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1138,7 +1164,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 19:
 				return val * 1000000000000000000L * 10;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1154,8 +1183,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case21MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1209,7 +1238,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 20:
 				return val * 1000000000000000000L * 100;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1225,8 +1257,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case22MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1282,7 +1314,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 21:
 				return val * 1000000000000000000L * 1000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1298,8 +1333,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case23MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1357,7 +1392,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 22:
 				return val * 1000000000000000000L * 10000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1374,8 +1412,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case24MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1435,7 +1473,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 23:
 				return val * 1000000000000000000L * 100000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1451,8 +1492,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case25MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1514,7 +1555,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 24:
 				return val * 1000000000000000000L * 1000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1531,8 +1575,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case26MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1596,7 +1640,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 25:
 				return val * 1000000000000000000L * 10000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1613,8 +1660,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case27MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1680,7 +1727,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 26:
 				return val * 1000000000000000000L * 100000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1696,8 +1746,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case28MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1765,7 +1815,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 27:
 				return val * 1000000000000000000L * 1000000000;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1781,8 +1834,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case29MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1852,7 +1905,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 28:
 				return val * 1000000000000000000L * 10000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1868,8 +1924,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case30MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -1941,7 +1997,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 29:
 				return val * 1000000000000000000L * 100000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -1957,8 +2016,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case31MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -2032,7 +2091,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 30:
 				return val * 1000000000000000000L * 1000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 
@@ -2048,8 +2110,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 				for (int j = 0; j < TESTS_PER_ITER; j++) {
 					final double d = RANDOM_DOUBLES[j];
 					final double multiplied = case32MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					final long cast = (long) multiplied;
-					RESULT[numCases] += cast;
+					
+					RESULT[numCases] += Double.doubleToLongBits(multiplied);
 				}
 			}
 		} catch (Exception e) {
@@ -2125,7 +2187,10 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 			case 31:
 				return val * 1000000000000000000L * 10000000000000L;
 			default:
-				throw new ParseException("Unhandled power of ten: " + power, 0);
+				if (THROW_EXCEPTION_FROM_DEFAULT)
+					throw new ParseException("Unhandled power of ten: " + power, 0);
+				else
+					return val;
 		}
 	}
 }
