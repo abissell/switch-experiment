@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import java.text.ParseException;
 
-@SuppressWarnings("ConstantConditions")
+@SuppressWarnings({"ConstantConditions", "NumericOverflow"})
 public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	private static final boolean THROW_EXCEPTION_FROM_DEFAULT = false;
 	private static final int TESTS_PER_ITER = 20000;
@@ -16,11 +16,109 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 
 	private static final int[] RANDOM_INTS = new int[TESTS_PER_ITER];
 	private static final double[] RANDOM_DOUBLES = new double[TESTS_PER_ITER];
-	private static final int MAX_NUM_CASES = 32;
-	private static final long[] RESULT = new long[MAX_NUM_CASES + 1];
+	private static final boolean RUN_BINARY_SEARCH_ARRAYS = true;
+	private static final int NUM_SWITCH_METHODS = 32;
+	private static final int NUM_METHODS = NUM_SWITCH_METHODS + (RUN_BINARY_SEARCH_ARRAYS ? 2 : 0);
+	private static final long[] RESULT = new long[NUM_METHODS + 1];
 	static {
-		for (int i = 0; i < MAX_NUM_CASES; i++)
+		for (int i = 0; i < NUM_METHODS; i++)
 			RESULT[i] = 0L;
+	}
+
+	private static final long[] ARRAY_32 = new long[32];
+	static {
+		for (int i = 0; i < 32; i++) {
+			if (i == 0)
+				ARRAY_32[i] = 1;
+			else if (i == 1)
+				ARRAY_32[i] = 10;
+			else if (i == 2)
+				ARRAY_32[i] = 100;
+			else if (i == 3)
+				ARRAY_32[i] = 1000;
+			else if (i == 4)
+				ARRAY_32[i] = 10000;
+			else if (i == 5)
+				ARRAY_32[i] = 100000;
+			else if (i == 6)
+				ARRAY_32[i] = 1000000;
+			else if (i == 7)
+				ARRAY_32[i] = 10000000;
+			else if (i == 8)
+				ARRAY_32[i] = 100000000;
+			else if (i == 9)
+				ARRAY_32[i] = 1000000000;
+			else if (i == 10)
+				ARRAY_32[i] = 10000000000L;
+			else if (i == 11)
+				ARRAY_32[i] = 100000000000L;
+			else if (i == 12)
+				ARRAY_32[i] = 1000000000000L;
+			else if (i == 13)
+				ARRAY_32[i] = 10000000000000L;
+			else if (i == 14)
+				ARRAY_32[i] = 100000000000000L;
+			else if (i == 15)
+				ARRAY_32[i] = 1000000000000000L;
+			else if (i == 16)
+				ARRAY_32[i] = 10000000000000000L;
+			else if (i == 17)
+				ARRAY_32[i] = 100000000000000000L;
+			else if (i == 18)
+				ARRAY_32[i] = 1000000000000000000L;
+			else if (i == 19)
+				ARRAY_32[i] = 1000000000000000000L * 10;
+			else if (i == 20)
+				ARRAY_32[i] = 1000000000000000000L * 100;
+			else if (i == 21)
+				ARRAY_32[i] = 1000000000000000000L * 1000;
+			else if (i == 22)
+				ARRAY_32[i] = 1000000000000000000L * 10000;
+			else if (i == 23)
+				ARRAY_32[i] = 1000000000000000000L * 100000;
+			else if (i == 24)
+				ARRAY_32[i] = 1000000000000000000L * 1000000;
+			else if (i == 25)
+				ARRAY_32[i] = 1000000000000000000L * 10000000;
+			else if (i == 26)
+				ARRAY_32[i] = 1000000000000000000L * 100000000;
+			else if (i == 27)
+				ARRAY_32[i] = 1000000000000000000L * 1000000000;
+			else if (i == 28)
+				ARRAY_32[i] = 1000000000000000000L * 10000000000L;
+			else if (i == 29)
+				ARRAY_32[i] = 1000000000000000000L * 100000000000L;
+			else if (i == 30)
+				ARRAY_32[i] = 1000000000000000000L * 1000000000000L;
+			else if (i == 31)
+				ARRAY_32[i] = 1000000000000000000L * 10000000000000L;
+		}
+	}
+
+	private static final int[] ARRAY_10 = new int[10];
+	static {
+		for (int i = 0; i < 10; i++) {
+			if (i == 0)
+				ARRAY_10[i] = 1;
+			else if (i == 1)
+				ARRAY_10[i] = 10;
+			else if (i == 2)
+				ARRAY_10[i] = 100;
+			else if (i == 3)
+				ARRAY_10[i] = 1000;
+			else if (i == 4)
+				ARRAY_10[i] = 10000;
+			else if (i == 5)
+				ARRAY_10[i] = 100000;
+			else if (i == 6)
+				ARRAY_10[i] = 1000000;
+			else if (i == 7)
+				ARRAY_10[i] = 10000000;
+			else if (i == 8)
+				ARRAY_10[i] = 100000000;
+			else if (i == 9)
+				ARRAY_10[i] = 1000000000;
+		}
 	}
 
 	public TestSwitchingForPowersOfTen() {
@@ -69,13 +167,13 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	@AfterClass
 	public static void printResultToPreventOptimization() {
 		System.out.println("Tests finished.");
-		for (int i = 0; i <= MAX_NUM_CASES; i++) {
+		for (int i = 0; i <= NUM_METHODS; i++) {
 			System.out.print(i + "=" + RESULT[i] + ", ");
 		}
 		System.out.println();
 
-		final long baseResult = RESULT[MAX_NUM_CASES];
-		for (int i = MAX_NUM_CASES; i >= MAX_POWER; i--) {
+		final long baseResult = RESULT[NUM_METHODS];
+		for (int i = NUM_METHODS; i >= MAX_POWER; i--) {
 			try {
 				Assert.assertEquals(baseResult, RESULT[i]);
 				// Assert.assertEquals(Math.abs(result - RESULT[i]) < 15000, true);
@@ -2196,5 +2294,59 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 				else
 					return val;
 		}
+	}
+
+	@Test
+	public void test32CaseArrayBinaryMultiplyByPowersOfTen() {
+		final int numCases = 32;
+		if (MAX_POWER > numCases)
+			return;
+
+		final int resultIndex = 33;
+
+		try
+		{
+			for (int i = 0; i < NUM_ITER; i++) {
+				for (int j = 0; j < TESTS_PER_ITER; j++) {
+					final double d = RANDOM_DOUBLES[j];
+					final double multiplied = array32MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+
+					RESULT[resultIndex] += Double.doubleToLongBits(multiplied);
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	private double array32MultiplyByPowerOfTen(double val, int power) {
+		return val * ARRAY_32[power];
+	}
+
+	@Test
+	public void test10CaseArrayBinaryMultiplyByPowersOfTen() {
+		final int numCases = 10;
+		if (MAX_POWER > numCases)
+			return;
+
+		final int resultIndex = 34;
+
+		try
+		{
+			for (int i = 0; i < NUM_ITER; i++) {
+				for (int j = 0; j < TESTS_PER_ITER; j++) {
+					final double d = RANDOM_DOUBLES[j];
+					final double multiplied = array10MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
+
+					RESULT[resultIndex] += Double.doubleToLongBits(multiplied);
+				}
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+
+	private double array10MultiplyByPowerOfTen(double val, int power) {
+		return val * ARRAY_10[power];
 	}
 }
