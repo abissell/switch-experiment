@@ -28,22 +28,8 @@ public class TestSwitchingForPowersOfTenOrderReversed extends AbstractBenchmark 
 
 	@BeforeClass
 	public static void setup() {
-		fillRandomInts();
-		fillRandomDoubles();
 		// printCheckRandoms();
 		System.out.println("Starting tests.");
-	}
-
-	private static void fillRandomInts() {
-		for (int i = 0; i < TESTS_PER_ITER; i++) {
-			RANDOM_INTS[i] = RandomFactory.randomInt(MAX_POWER);
-		}
-	}
-
-	private static void fillRandomDoubles() {
-		for (int i = 0; i < TESTS_PER_ITER; i++) {
-			RANDOM_DOUBLES[i] = RandomFactory.randomDouble();
-		}
 	}
 
 	@SuppressWarnings("UnusedDeclaration")

@@ -6,119 +6,71 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.EnumMap;
+import java.util.Map;
 
-@SuppressWarnings({"ConstantConditions", "NumericOverflow"})
 public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
-	private static final boolean THROW_EXCEPTION_FROM_DEFAULT = false;
-	private static final int TESTS_PER_ITER = 20000;
-	private static final int NUM_ITER = 1000;
-	private static final int MAX_POWER = 9;
+	private static final TestSetup SETUP_TYPE = TestSetup.MOST_CASES_TO_LEAST;
+	private static final TestConfiguration CONFIG = new TestConfiguration(TestSetup.MOST_CASES_TO_LEAST);
+	private static final int NUM_ITERS = SETUP_TYPE.numIterations();
+	private static final int TESTS_PER_ITER = SETUP_TYPE.testsPerIteration();
+	private static final int MAX_POWER = SETUP_TYPE.maxPower();
+	private static final boolean THROW_EXCEPTIONS_FROM_DEFAULT = SETUP_TYPE.throwExceptionsFromDefault();
+	private static final int MAX_NUM_CASES = 32;
+	private static final int NUM_SWITCHERS = MAX_NUM_CASES + 1; // Additional space for the empty switcher
 
-	private static final int[] RANDOM_INTS = new int[TESTS_PER_ITER];
-	private static final double[] RANDOM_DOUBLES = new double[TESTS_PER_ITER];
-	private static final boolean RUN_BINARY_SEARCH_ARRAYS = true;
-	private static final int NUM_SWITCH_METHODS = 32;
-	private static final int NUM_METHODS = NUM_SWITCH_METHODS + (RUN_BINARY_SEARCH_ARRAYS ? 2 : 0);
-	private static final long[] RESULT = new long[NUM_METHODS + 1];
+	private static final Map<SwitcherStatementType, Switcher[]> SWITCHERS = new EnumMap<>(SwitcherStatementType.class);
 	static {
-		for (int i = 0; i < NUM_METHODS; i++)
-			RESULT[i] = 0L;
-	}
+		for (SwitcherStatementType type : CONFIG.testSetup().statementTypesToTest()) {
+			final Switcher[] switchers = new Switcher[NUM_SWITCHERS];
+			SWITCHERS.put(type, switchers);
+			final SwitcherFactory switcherFactory;
+			switch (type) {
+				case INT_SWITCH:
+					switcherFactory = new IntSwitcherFactory(THROW_EXCEPTIONS_FROM_DEFAULT);
+					break;
+				case ARRAY:
+					switcherFactory = new ArraySwitcherFactory();
+					break;
+				default:
+					throw new IllegalArgumentException("No SwitcherFactory defined for statement type " + type);
+			}
 
-	private static final long[] ARRAY_32 = new long[32];
-	static {
-		for (int i = 0; i < 32; i++) {
-			if (i == 0)
-				ARRAY_32[i] = 1;
-			else if (i == 1)
-				ARRAY_32[i] = 10;
-			else if (i == 2)
-				ARRAY_32[i] = 100;
-			else if (i == 3)
-				ARRAY_32[i] = 1000;
-			else if (i == 4)
-				ARRAY_32[i] = 10000;
-			else if (i == 5)
-				ARRAY_32[i] = 100000;
-			else if (i == 6)
-				ARRAY_32[i] = 1000000;
-			else if (i == 7)
-				ARRAY_32[i] = 10000000;
-			else if (i == 8)
-				ARRAY_32[i] = 100000000;
-			else if (i == 9)
-				ARRAY_32[i] = 1000000000;
-			else if (i == 10)
-				ARRAY_32[i] = 10000000000L;
-			else if (i == 11)
-				ARRAY_32[i] = 100000000000L;
-			else if (i == 12)
-				ARRAY_32[i] = 1000000000000L;
-			else if (i == 13)
-				ARRAY_32[i] = 10000000000000L;
-			else if (i == 14)
-				ARRAY_32[i] = 100000000000000L;
-			else if (i == 15)
-				ARRAY_32[i] = 1000000000000000L;
-			else if (i == 16)
-				ARRAY_32[i] = 10000000000000000L;
-			else if (i == 17)
-				ARRAY_32[i] = 100000000000000000L;
-			else if (i == 18)
-				ARRAY_32[i] = 1000000000000000000L;
-			else if (i == 19)
-				ARRAY_32[i] = 1000000000000000000L * 10;
-			else if (i == 20)
-				ARRAY_32[i] = 1000000000000000000L * 100;
-			else if (i == 21)
-				ARRAY_32[i] = 1000000000000000000L * 1000;
-			else if (i == 22)
-				ARRAY_32[i] = 1000000000000000000L * 10000;
-			else if (i == 23)
-				ARRAY_32[i] = 1000000000000000000L * 100000;
-			else if (i == 24)
-				ARRAY_32[i] = 1000000000000000000L * 1000000;
-			else if (i == 25)
-				ARRAY_32[i] = 1000000000000000000L * 10000000;
-			else if (i == 26)
-				ARRAY_32[i] = 1000000000000000000L * 100000000;
-			else if (i == 27)
-				ARRAY_32[i] = 1000000000000000000L * 1000000000;
-			else if (i == 28)
-				ARRAY_32[i] = 1000000000000000000L * 10000000000L;
-			else if (i == 29)
-				ARRAY_32[i] = 1000000000000000000L * 100000000000L;
-			else if (i == 30)
-				ARRAY_32[i] = 1000000000000000000L * 1000000000000L;
-			else if (i == 31)
-				ARRAY_32[i] = 1000000000000000000L * 10000000000000L;
+			ArraysHelper.fill(switchers, new ArrayFillFunction<Switcher>() {
+				@Override
+				public Switcher getElementForIndex(int index) {
+					return switcherFactory.getNewSwitcher(index);
+				}
+			});
 		}
 	}
 
-	private static final int[] ARRAY_10 = new int[10];
+	private static final Map<SwitcherStatementType, long[]> results = new EnumMap<>(SwitcherStatementType.class);
 	static {
-		for (int i = 0; i < 10; i++) {
-			if (i == 0)
-				ARRAY_10[i] = 1;
-			else if (i == 1)
-				ARRAY_10[i] = 10;
-			else if (i == 2)
-				ARRAY_10[i] = 100;
-			else if (i == 3)
-				ARRAY_10[i] = 1000;
-			else if (i == 4)
-				ARRAY_10[i] = 10000;
-			else if (i == 5)
-				ARRAY_10[i] = 100000;
-			else if (i == 6)
-				ARRAY_10[i] = 1000000;
-			else if (i == 7)
-				ARRAY_10[i] = 10000000;
-			else if (i == 8)
-				ARRAY_10[i] = 100000000;
-			else if (i == 9)
-				ARRAY_10[i] = 1000000000;
+		for (SwitcherStatementType type : CONFIG.testSetup().statementTypesToTest()) {
+			final long[] resultsForSwitchers = new long[NUM_SWITCHERS];
+			Arrays.fill(resultsForSwitchers, 0L);
+			results.put(type, new long[NUM_SWITCHERS]);
 		}
+	}
+
+	private static final int[] RANDOM_INTS = new int[SETUP_TYPE.testsPerIteration()];
+	private static final double[] RANDOM_DOUBLES = new double[SETUP_TYPE.testsPerIteration()];
+	static {
+		ArraysHelper.fillIntArray(RANDOM_INTS, new ArrayFillFunction<Integer>() {
+			@Override
+			public Integer getElementForIndex(int index) {
+				return CONFIG.getRandomIntForTest(index);
+			}
+		});
+
+		ArraysHelper.fillDoubleArray(RANDOM_DOUBLES, new ArrayFillFunction<Double>() {
+			@Override
+			public Double getElementForIndex(int index) {
+				return CONFIG.getRandomDoubleForTest(index);
+			}
+		});
 	}
 
 	public TestSwitchingForPowersOfTen() {
@@ -127,22 +79,8 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 
 	@BeforeClass
 	public static void setup() {
-		fillRandomInts();
-		fillRandomDoubles();
-		// printCheckRandoms();
+		printCheckRandoms();
 		System.out.println("Starting tests.");
-	}
-
-	private static void fillRandomInts() {
-		for (int i = 0; i < TESTS_PER_ITER; i++) {
-			RANDOM_INTS[i] = RandomFactory.randomInt(MAX_POWER);
-		}
-	}
-
-	private static void fillRandomDoubles() {
-		for (int i = 0; i < TESTS_PER_ITER; i++) {
-			RANDOM_DOUBLES[i] = RandomFactory.randomDouble();
-		}
 	}
 
 	@SuppressWarnings("UnusedDeclaration")
@@ -164,2189 +102,406 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
+	private long runTest(final Switcher switcher, final int iterationCount) throws ParseException {
+		final double d = RANDOM_DOUBLES[iterationCount];
+		final double mult = d * switcher.switchForCase(RANDOM_INTS[iterationCount]);
+
+		return Double.doubleToLongBits(mult);
+	}
+
+	private void runTestsForSwitcher(final SwitcherStatementType type, final int numCases) throws ParseException {
+		final Switcher switcher = SWITCHERS.get(type)[numCases];
+		final long[] resultsBucket = results.get(type);
+
+		long result = resultsBucket[numCases];
+		for (int i = 0; i < NUM_ITERS; i++) {
+			for (int j = 0; j < TESTS_PER_ITER; j++) {
+				result += runTest(switcher, j);
+			}
+		}
+
+		resultsBucket[numCases] = result;
+	}
+
+	private void switchCasesOnType(final SwitcherStatementType type, final int numCases) {
+		if (numCases < MAX_POWER)
+			return;
+
+		try {
+			runTestsForSwitcher(type, numCases);
+		} catch (ParseException e) {
+			System.out.println("ParseException" + e.getMessage());
+		}
+	}
+
+	private void intSwitchCases(final int numCases) {
+		switchCasesOnType(SwitcherStatementType.INT_SWITCH, numCases);
+	}
+
+	private void arraySwitchCases(final int numCases) {
+		switchCasesOnType(SwitcherStatementType.ARRAY, numCases);
+	}
+
 	@AfterClass
 	public static void printResultToPreventOptimization() {
 		System.out.println("Tests finished.");
-		for (int i = 0; i <= NUM_METHODS; i++) {
-			System.out.print(i + "=" + RESULT[i] + ", ");
+		for (SwitcherStatementType type : results.keySet()) {
+			System.out.print("RESULTS FOR TYPE: " + type + ": ");
+			final long[] resultsForType = results.get(type);
+			ArraysHelper.forEach(resultsForType, new ArrayFunctionOnLongIndexedElements() {
+				@Override
+				public final void f(int index, long e) {
+					System.out.print(index + "=" + e +", ");
+				}
+			});
 		}
 		System.out.println();
 
-		final long baseResult = RESULT[NUM_METHODS];
-		for (int i = NUM_METHODS; i >= MAX_POWER; i--) {
-			try {
-				Assert.assertEquals(baseResult, RESULT[i]);
-				// Assert.assertEquals(Math.abs(result - RESULT[i]) < 15000, true);
-			} catch (AssertionFailedError e) {
-				System.out.println("Bad result at index=" + i + " with result=" + RESULT[i] + " != baseResult=" + baseResult);
-				throw e;
-			}
+		for (SwitcherStatementType type : results.keySet()) {
+			final long[] resultsByNumCases = results.get(type);
+			final long baseResult = resultsByNumCases[MAX_NUM_CASES];
+			ArraysHelper.forEach(resultsByNumCases, new ArrayFunctionOnLongIndexedElements() {
+				@Override
+				public final void f(int index, long e) {
+					try {
+						if (index >= MAX_POWER)
+							Assert.assertEquals(e, baseResult);
+					} catch (AssertionFailedError error) {
+						System.out.println("Bad result at index = " + index + " with result=" + e + " != baseResult=" + baseResult);
+						throw error;
+					}
+				}
+			});
 		}
 	}
 
 	@Test
-	public void test32CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 32;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case32MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case32MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			case 26:
-				return val * 1000000000000000000L * 100000000;
-			case 27:
-				return val * 1000000000000000000L * 1000000000;
-			case 28:
-				return val * 1000000000000000000L * 10000000000L;
-			case 29:
-				return val * 1000000000000000000L * 100000000000L;
-			case 30:
-				return val * 1000000000000000000L * 1000000000000L;
-			case 31:
-				return val * 1000000000000000000L * 10000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch32cases() {
+		intSwitchCases(32);
 	}
 
 	@Test
-	public void test31CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 31;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case31MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case31MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			case 26:
-				return val * 1000000000000000000L * 100000000;
-			case 27:
-				return val * 1000000000000000000L * 1000000000;
-			case 28:
-				return val * 1000000000000000000L * 10000000000L;
-			case 29:
-				return val * 1000000000000000000L * 100000000000L;
-			case 30:
-				return val * 1000000000000000000L * 1000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch31cases() {
+		intSwitchCases(31);
 	}
 
 	@Test
-	public void test30CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 30;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case30MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case30MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			case 26:
-				return val * 1000000000000000000L * 100000000;
-			case 27:
-				return val * 1000000000000000000L * 1000000000;
-			case 28:
-				return val * 1000000000000000000L * 10000000000L;
-			case 29:
-				return val * 1000000000000000000L * 100000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch30cases() {
+		intSwitchCases(30);
 	}
 
 	@Test
-	public void test29CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 29;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case29MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case29MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			case 26:
-				return val * 1000000000000000000L * 100000000;
-			case 27:
-				return val * 1000000000000000000L * 1000000000;
-			case 28:
-				return val * 1000000000000000000L * 10000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch29cases() {
+		intSwitchCases(29);
 	}
 
 	@Test
-	public void test28CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 28;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case28MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case28MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			case 26:
-				return val * 1000000000000000000L * 100000000;
-			case 27:
-				return val * 1000000000000000000L * 1000000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch28cases() {
+		intSwitchCases(28);
 	}
 
 	@Test
-	public void test27CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 27;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case27MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-	
-	private static double case27MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			case 26:
-				return val * 1000000000000000000L * 100000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch27cases() {
+		intSwitchCases(27);
 	}
 
 	@Test
-	public void test26CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 26;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case26MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case26MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			case 25:
-				return val * 1000000000000000000L * 10000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch26cases() {
+		intSwitchCases(26);
 	}
 
 	@Test
-	public void test25CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 25;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case25MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case25MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			case 24:
-				return val * 1000000000000000000L * 1000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch25cases() {
+		intSwitchCases(25);
 	}
 
 	@Test
-	public void test24CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 24;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case24MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case24MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			case 23:
-				return val * 1000000000000000000L * 100000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch24cases() {
+		intSwitchCases(24);
 	}
 
 	@Test
-	public void test23CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 23;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case23MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case23MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			case 22:
-				return val * 1000000000000000000L * 10000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch23cases() {
+		intSwitchCases(23);
 	}
 
 	@Test
-	public void test22CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 22;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case22MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case22MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			case 21:
-				return val * 1000000000000000000L * 1000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch22cases() {
+		intSwitchCases(22);
 	}
 
 	@Test
-	public void test21CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 21;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case21MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case21MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			case 20:
-				return val * 1000000000000000000L * 100;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch21cases() {
+		intSwitchCases(21);
 	}
 
 	@Test
-	public void test20CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 20;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case20MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case20MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			case 19:
-				return val * 1000000000000000000L * 10;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch20cases() {
+		intSwitchCases(20);
 	}
 
 	@Test
-	public void test19CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 19;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case19MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case19MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			case 18:
-				return val*1000000000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch19cases() {
+		intSwitchCases(19);
 	}
 
 	@Test
-	public void test18CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 18;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case18MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case18MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			case 17:
-				return val*100000000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch18cases() {
+		intSwitchCases(18);
 	}
 
 	@Test
-	public void test17CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 17;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case17MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case17MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			case 16:
-				return val*10000000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch17cases() {
+		intSwitchCases(17);
 	}
 
 	@Test
-	public void test16CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 16;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case16MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case16MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			case 15:
-				return val*1000000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch16cases() {
+		intSwitchCases(16);
 	}
 
 	@Test
-	public void test15CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 15;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case15MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case15MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			case 14:
-				return val*100000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch15cases() {
+		intSwitchCases(15);
 	}
 
 	@Test
-	public void test14CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 14;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case14MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case14MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			case 13:
-				return val*10000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch14cases() {
+		intSwitchCases(14);
 	}
 
 	@Test
-	public void test13CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 13;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case13MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case13MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			case 12:
-				return val*1000000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch13cases() {
+		intSwitchCases(13);
 	}
 
 	@Test
-	public void test12CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 12;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case12MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case12MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			case 11:
-				return val*100000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch12cases() {
+		intSwitchCases(12);
 	}
 
 	@Test
-	public void test11CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 11;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case11MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case11MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			case 10:
-				return val*10000000000L;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch11cases() {
+		intSwitchCases(11);
 	}
 
 	@Test
-	public void test10CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 10;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case10MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case10MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			case 9:
-				return val*1000000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch10cases() {
+		intSwitchCases(10);
 	}
 
 	@Test
-	public void test9CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 9;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case9MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case9MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			case 8:
-				return val*100000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch9cases() {
+		intSwitchCases(9);
 	}
 
 	@Test
-	public void test8CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 8;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case8MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case8MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			case 7:
-				return val*10000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch8cases() {
+		intSwitchCases(8);
 	}
 
 	@Test
-	public void test7CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 7;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case7MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case7MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			case 6:
-				return val*1000000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch7cases() {
+		intSwitchCases(7);
 	}
 
 	@Test
-	public void test6CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 6;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case6MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case6MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			case 5:
-				return val*100000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch6cases() {
+		intSwitchCases(6);
 	}
 
 	@Test
-	public void test5CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 5;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case5MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case5MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			case 4:
-				return val*10000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch5cases() {
+		intSwitchCases(5);
 	}
 
 	@Test
-	public void test4CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 4;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case4MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case4MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			case 3:
-				return val*1000;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch4cases() {
+		intSwitchCases(4);
 	}
 
 	@Test
-	public void test3CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 3;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case3MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case3MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			case 2:
-				return val*100;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch3cases() {
+		intSwitchCases(3);
 	}
 
 	@Test
-	public void test2CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 2;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case2MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case2MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			case 1:
-				return val*10;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch2cases() {
+		intSwitchCases(2);
 	}
 
 	@Test
-	public void test1CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 1;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case1MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case1MultiplyByPowerOfTen(double val, int power) throws ParseException {
-		switch (power)
-		{
-			case 0:
-				return val;
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch1cases() {
+		intSwitchCases(1);
 	}
 
 	@Test
-	public void test0CaseSwitchingMultiplyByPowersOfTen() {
-		final int numCases = 0;
-		if (MAX_POWER > numCases)
-			return;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = case0MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-					
-					RESULT[numCases] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private static double case0MultiplyByPowerOfTen(@SuppressWarnings("UnusedParameters") double val, int power) throws ParseException {
-		switch (power)
-		{
-			default:
-				if (THROW_EXCEPTION_FROM_DEFAULT)
-					throw new ParseException("Unhandled power of ten: " + power, 0);
-				else
-					return val;
-		}
+	public void intSwitch0cases() {
+		intSwitchCases(0);
 	}
 
 	@Test
-	public void test32CaseArrayBinaryMultiplyByPowersOfTen() {
-		final int numCases = 32;
-		if (MAX_POWER > numCases)
-			return;
-
-		final int resultIndex = 33;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = array32MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-
-					RESULT[resultIndex] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
-	}
-
-	private double array32MultiplyByPowerOfTen(double val, int power) {
-		return val * ARRAY_32[power];
+	public void arraySwitch32cases() {
+		arraySwitchCases(32);
 	}
 
 	@Test
-	public void test10CaseArrayBinaryMultiplyByPowersOfTen() {
-		final int numCases = 10;
-		if (MAX_POWER > numCases)
-			return;
-
-		final int resultIndex = 34;
-
-		try
-		{
-			for (int i = 0; i < NUM_ITER; i++) {
-				for (int j = 0; j < TESTS_PER_ITER; j++) {
-					final double d = RANDOM_DOUBLES[j];
-					final double multiplied = array10MultiplyByPowerOfTen(d, RANDOM_INTS[j]);
-
-					RESULT[resultIndex] += Double.doubleToLongBits(multiplied);
-				}
-			}
-		} catch (Exception e) {
-			System.out.println(e.getMessage());
-		}
+	public void arraySwitch31cases() {
+		arraySwitchCases(31);
 	}
 
-	private double array10MultiplyByPowerOfTen(double val, int power) {
-		return val * ARRAY_10[power];
+	@Test
+	public void arraySwitch30cases() {
+		arraySwitchCases(30);
+	}
+
+	@Test
+	public void arraySwitch29cases() {
+		arraySwitchCases(29);
+	}
+
+	@Test
+	public void arraySwitch28cases() {
+		arraySwitchCases(28);
+	}
+
+	@Test
+	public void arraySwitch27cases() {
+		arraySwitchCases(27);
+	}
+
+	@Test
+	public void arraySwitch26cases() {
+		arraySwitchCases(26);
+	}
+
+	@Test
+	public void arraySwitch25cases() {
+		arraySwitchCases(25);
+	}
+
+	@Test
+	public void arraySwitch24cases() {
+		arraySwitchCases(24);
+	}
+
+	@Test
+	public void arraySwitch23cases() {
+		arraySwitchCases(23);
+	}
+
+	@Test
+	public void arraySwitch22cases() {
+		arraySwitchCases(22);
+	}
+
+	@Test
+	public void arraySwitch21cases() {
+		arraySwitchCases(21);
+	}
+
+	@Test
+	public void arraySwitch20cases() {
+		arraySwitchCases(20);
+	}
+
+	@Test
+	public void arraySwitch19cases() {
+		arraySwitchCases(19);
+	}
+
+	@Test
+	public void arraySwitch18cases() {
+		arraySwitchCases(18);
+	}
+
+	@Test
+	public void arraySwitch17cases() {
+		arraySwitchCases(17);
+	}
+
+	@Test
+	public void arraySwitch16cases() {
+		arraySwitchCases(16);
+	}
+
+	@Test
+	public void arraySwitch15cases() {
+		arraySwitchCases(15);
+	}
+
+	@Test
+	public void arraySwitch14cases() {
+		arraySwitchCases(14);
+	}
+
+	@Test
+	public void arraySwitch13cases() {
+		arraySwitchCases(13);
+	}
+
+	@Test
+	public void arraySwitch12cases() {
+		arraySwitchCases(12);
+	}
+
+	@Test
+	public void arraySwitch11cases() {
+		arraySwitchCases(11);
+	}
+
+	@Test
+	public void arraySwitch10cases() {
+		arraySwitchCases(10);
+	}
+
+	@Test
+	public void arraySwitch9cases() {
+		arraySwitchCases(9);
+	}
+
+	@Test
+	public void arraySwitch8cases() {
+		arraySwitchCases(8);
+	}
+
+	@Test
+	public void arraySwitch7cases() {
+		arraySwitchCases(7);
+	}
+
+	@Test
+	public void arraySwitch6cases() {
+		arraySwitchCases(6);
+	}
+
+	@Test
+	public void arraySwitch5cases() {
+		arraySwitchCases(5);
+	}
+
+	@Test
+	public void arraySwitch4cases() {
+		arraySwitchCases(4);
+	}
+
+	@Test
+	public void arraySwitch3cases() {
+		arraySwitchCases(3);
+	}
+
+	@Test
+	public void arraySwitch2cases() {
+		arraySwitchCases(2);
+	}
+
+	@Test
+	public void arraySwitch1cases() {
+		arraySwitchCases(1);
+	}
+
+	@Test
+	public void arraySwitch0cases() {
+		arraySwitchCases(0);
 	}
 }

@@ -1,0 +1,3 @@
+interface RandomDoubleFactory {
+	double randomDouble();
+}
