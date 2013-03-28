@@ -1,7 +1,7 @@
 enum ArraysHelper {
 	@SuppressWarnings("UnusedDeclaration")INSTANCE; // Enum singleton
 
-	public static <E> void fill(final E[] array, final ArrayFillFunction<E> func) {
+	public static <E> void fill(final E[] array, final ArrayFillFunction<? extends E> func) {
 		for (int i = 0; i < array.length; ++i) {
 			array[i] = func.getElementForIndex(i);
 		}
@@ -19,9 +19,10 @@ enum ArraysHelper {
 		}
 	}
 
-	public static <E> void forEach(final E[] array, final ArrayFunctionOnElements<E> func) {
-		for (E e : array) {
-			func.f(e);
+	@SuppressWarnings("unchecked")
+	public static <E> void forEach(final Object[] array, final ArrayFunctionOnElements<? super E> func) {
+		for (Object obj : array) {
+			func.f((E) obj);
 		}
 	}
 

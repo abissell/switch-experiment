@@ -1,7 +1,7 @@
 import java.util.HashMap;
 import java.util.Map;
 
-final class ArraySwitcherFactory implements SwitcherFactory {
+final class ArraySwitcherFactory implements IntSwitcherFactory {
 	private static final Map<Integer, SwitcherType> SWITCHER_TYPES = new HashMap<>();
 	private static final SwitcherStatementType SWITCHER_STATEMENT_TYPE = SwitcherStatementType.INT_SWITCH;
 	private static final SwitcherContiguity SWITCHER_CONTIGUITY = SwitcherContiguity.CONTIGUOUS_ASCENDING;
@@ -34,11 +34,11 @@ final class ArraySwitcherFactory implements SwitcherFactory {
 
 	}
 
-	public Switcher getNewSwitcher(final int numCases) {
+	public IntSwitcher getNewSwitcher(final int numCases) {
 		return new ArraySwitcher(numCases);
 	}
 
-	private static final class ArraySwitcher implements Switcher {
+	private static final class ArraySwitcher implements IntSwitcher {
 		private final SwitcherType switcherType;
 		private final long[] lookupArray;
 

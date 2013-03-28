@@ -1,6 +1,6 @@
 import java.text.ParseException;
 
-interface Switcher {
+interface IntSwitcher {
 	SwitcherType switcherType();
 	long switchForCase(int intCase) throws ParseException;
 }

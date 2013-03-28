@@ -3,17 +3,18 @@ import java.util.Random;
 import java.util.Set;
 
 enum TestSetup {
-	MOST_CASES_TO_LEAST(5000, 1000, 9, false),
+	MOST_CASES_TO_LEAST(50, 1000, 9, false),
 	LEAST_CASES_TO_MOST(5000, 1000, 9, false);
 
-	private final Set<SwitcherStatementType> statementTypesToTest = EnumSet.of(SwitcherStatementType.INT_SWITCH,
-																			   SwitcherStatementType.ARRAY);
 	private final int testsPerIteration;
 	private final int numIterations;
 	private final int maxPower;
 	private final boolean throwExceptionsFromDefault;
 	private final RandomIntFactory randomIntFactory;
 	private final RandomDoubleFactory randomDoubleFactory;
+	private final RandomEnumFactory randomEnumFactory;
+	private final Set<SwitcherStatementType> intSwitchTypesToTest = EnumSet.of(SwitcherStatementType.INT_SWITCH, SwitcherStatementType.ARRAY);
+	private final Set<EnumSize> intEnumTypesToTest = EnumSet.of(EnumSize.BIG, EnumSize.MIDDLE, EnumSize.SMALL);
 
 	private TestSetup(int testsPerIteration, int numIterations, int maxPower, boolean throwExceptionsFromDefault) {
 		if (testsPerIteration < maxPower + 5)
@@ -26,10 +27,20 @@ enum TestSetup {
 
 		this.randomIntFactory = new JavaRandomIntFactory(new Random(System.currentTimeMillis()));
 		this.randomDoubleFactory = new JavaRandomDoubleFactory(new Random(System.currentTimeMillis() + 99999999L));
+		this.randomEnumFactory = new JavaRandomEnumFactory(new Random(System.currentTimeMillis() + 99999999999999L));
+
+		for (EnumSize enumSize : intEnumTypesToTest) {
+			if (enumSize.maxPower() < maxPower)
+				throw new IllegalArgumentException();
+		}
 	}
 
-	final Set<SwitcherStatementType> statementTypesToTest() {
-		return statementTypesToTest;
+	final Set<SwitcherStatementType> intSwitchTypesToTest() {
+		return intSwitchTypesToTest;
+	}
+
+	final Set<EnumSize> intEnumTypesToTest() {
+		return intEnumTypesToTest;
 	}
 
 	final int testsPerIteration() {
@@ -54,5 +65,9 @@ enum TestSetup {
 
 	public RandomDoubleFactory randomDoubleFactory() {
 		return randomDoubleFactory;
+	}
+
+	public RandomEnumFactory randomEnumFactory() {
+		return randomEnumFactory;
 	}
 }

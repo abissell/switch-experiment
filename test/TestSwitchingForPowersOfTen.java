@@ -6,9 +6,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.text.ParseException;
-import java.util.Arrays;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 
 public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	private static final TestSetup SETUP_TYPE = TestSetup.MOST_CASES_TO_LEAST;
@@ -20,38 +18,93 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	private static final int MAX_NUM_CASES = 32;
 	private static final int NUM_SWITCHERS = MAX_NUM_CASES + 1; // Additional space for the empty switcher
 
-	private static final Map<SwitcherStatementType, Switcher[]> SWITCHERS = new EnumMap<>(SwitcherStatementType.class);
+	private static final Map<SwitcherStatementType, IntSwitcher[]> INT_SWITCHERS = new EnumMap<>(SwitcherStatementType.class);
 	static {
-		for (SwitcherStatementType type : CONFIG.testSetup().statementTypesToTest()) {
-			final Switcher[] switchers = new Switcher[NUM_SWITCHERS];
-			SWITCHERS.put(type, switchers);
-			final SwitcherFactory switcherFactory;
+		for (SwitcherStatementType type : CONFIG.testSetup().intSwitchTypesToTest()) {
+			final IntSwitcher[] intSwitchers = new IntSwitcher[NUM_SWITCHERS];
+			INT_SWITCHERS.put(type, intSwitchers);
+			final IntSwitcherFactory intSwitcherFactory;
 			switch (type) {
 				case INT_SWITCH:
-					switcherFactory = new IntSwitcherFactory(THROW_EXCEPTIONS_FROM_DEFAULT);
+					intSwitcherFactory = new IntSwitcherFactoryImpl(THROW_EXCEPTIONS_FROM_DEFAULT);
 					break;
 				case ARRAY:
-					switcherFactory = new ArraySwitcherFactory();
+					intSwitcherFactory = new ArraySwitcherFactory();
 					break;
 				default:
-					throw new IllegalArgumentException("No SwitcherFactory defined for statement type " + type);
+					throw new IllegalArgumentException("No IntSwitcherFactory defined for statement type " + type);
 			}
 
-			ArraysHelper.fill(switchers, new ArrayFillFunction<Switcher>() {
+			ArraysHelper.fill(intSwitchers, new ArrayFillFunction<IntSwitcher>() {
 				@Override
-				public Switcher getElementForIndex(int index) {
-					return switcherFactory.getNewSwitcher(index);
+				public IntSwitcher getElementForIndex(int index) {
+					return intSwitcherFactory.getNewSwitcher(index);
 				}
 			});
 		}
 	}
 
-	private static final Map<SwitcherStatementType, long[]> results = new EnumMap<>(SwitcherStatementType.class);
+	private static final Map<EnumSize, EnumSwitcher[]> ENUM_SWITCHERS = new HashMap<>();
 	static {
-		for (SwitcherStatementType type : CONFIG.testSetup().statementTypesToTest()) {
+		final EnumSwitcherFactory enumFactory = new EnumSwitcherFactoryImpl(THROW_EXCEPTIONS_FROM_DEFAULT);
+
+		for (EnumSize size : EnumSize.values()) {
+			final EnumSwitcher[] enumSwitchers = new EnumSwitcher[NUM_SWITCHERS];
+			ENUM_SWITCHERS.put(size, enumSwitchers);
+			final ArrayFillFunction<EnumSwitcher> fillFunction;
+			if (size == EnumSize.BIG) {
+				fillFunction = new ArrayFillFunction<EnumSwitcher>() {
+					@Override
+					public EnumSwitcher getElementForIndex(int index) {
+						if (index < EnumSize.BIG.maxNumCases())
+							return enumFactory.getNewBigEnumSwitcher(index);
+						else
+							return null;
+					}
+				};
+			} else if (size == EnumSize.MIDDLE) {
+				fillFunction = new ArrayFillFunction<EnumSwitcher>() {
+					@Override
+					public EnumSwitcher getElementForIndex(int index) {
+						if (index < EnumSize.MIDDLE.maxNumCases())
+							return enumFactory.getNewMiddleEnumSwitcher(index);
+						else
+							return null;
+					}
+				};
+			} else if (size == EnumSize.SMALL) {
+				fillFunction = new ArrayFillFunction<EnumSwitcher>() {
+					@Override
+					public EnumSwitcher getElementForIndex(int index) {
+						if (index < EnumSize.SMALL.maxNumCases())
+							return enumFactory.getNewSmallEnumSwitcher(index);
+						else
+							return null;
+					}
+				};
+			} else {
+				throw new IllegalArgumentException();
+			}
+
+			ArraysHelper.fill(enumSwitchers, fillFunction);
+		}
+	}
+
+	private static final Map<SwitcherStatementType, long[]> INT_SWITCHER_RESULTS = new EnumMap<>(SwitcherStatementType.class);
+	static {
+		for (SwitcherStatementType type : CONFIG.testSetup().intSwitchTypesToTest()) {
 			final long[] resultsForSwitchers = new long[NUM_SWITCHERS];
 			Arrays.fill(resultsForSwitchers, 0L);
-			results.put(type, new long[NUM_SWITCHERS]);
+			INT_SWITCHER_RESULTS.put(type, new long[NUM_SWITCHERS]);
+		}
+	}
+
+	private static final Map<EnumSize, long[]> ENUM_SWITCHER_RESULTS = new EnumMap<>(EnumSize.class);
+	static {
+		for (EnumSize type : CONFIG.testSetup().intEnumTypesToTest()) {
+			final long[] resultsForSwitchers = new long[NUM_SWITCHERS];
+			Arrays.fill(resultsForSwitchers, 0L);
+			ENUM_SWITCHER_RESULTS.put(type, new long[NUM_SWITCHERS]);
 		}
 	}
 
@@ -71,6 +124,36 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 				return CONFIG.getRandomDoubleForTest(index);
 			}
 		});
+	}
+
+	private static final BigIntegerEnum[] RANDOM_BIG_INT_ENUMS = new BigIntegerEnum[SETUP_TYPE.testsPerIteration()];
+	private static final MiddleIntegerEnum[] RANDOM_MIDDLE_INT_ENUMS = new MiddleIntegerEnum[SETUP_TYPE.testsPerIteration()];
+	private static final SmallIntegerEnum[] RANDOM_SMALL_INT_ENUMS = new SmallIntegerEnum[SETUP_TYPE.testsPerIteration()];
+	static {
+		for (EnumSize type : CONFIG.testSetup().intEnumTypesToTest()) {
+			if (type == EnumSize.BIG) {
+				ArraysHelper.fill(RANDOM_BIG_INT_ENUMS, new ArrayFillFunction<BigIntegerEnum>() {
+					@Override
+					public BigIntegerEnum getElementForIndex(int index) {
+						return CONFIG.getRandomBigIntEnumForTest(index);
+					}
+				});
+			} else if (type == EnumSize.MIDDLE) {
+				ArraysHelper.fill(RANDOM_MIDDLE_INT_ENUMS, new ArrayFillFunction<MiddleIntegerEnum>() {
+					@Override
+					public MiddleIntegerEnum getElementForIndex(int index) {
+						return CONFIG.getRandomMiddleIntEnumForTest(index);
+					}
+				});
+			} else if (type == EnumSize.SMALL) {
+				ArraysHelper.fill(RANDOM_SMALL_INT_ENUMS, new ArrayFillFunction<SmallIntegerEnum>() {
+					@Override
+					public SmallIntegerEnum getElementForIndex(int index) {
+						return CONFIG.getRandomSmallIntEnumForTest(index);
+					}
+				});
+			}
+		}
 	}
 
 	public TestSwitchingForPowersOfTen() {
@@ -102,63 +185,172 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 		}
 	}
 
-	private long runTest(final Switcher switcher, final int iterationCount) throws ParseException {
+	private long runIntTest(final IntSwitcher intSwitcher, final int iterationCount) throws ParseException {
 		final double d = RANDOM_DOUBLES[iterationCount];
-		final double mult = d * switcher.switchForCase(RANDOM_INTS[iterationCount]);
+		final double mult = d * intSwitcher.switchForCase(RANDOM_INTS[iterationCount]);
 
 		return Double.doubleToLongBits(mult);
 	}
 
-	private void runTestsForSwitcher(final SwitcherStatementType type, final int numCases) throws ParseException {
-		final Switcher switcher = SWITCHERS.get(type)[numCases];
-		final long[] resultsBucket = results.get(type);
+	private long runBigIntEnumTest(final BigEnumSwitcher enumSwitcher, final BigIntegerEnum[] randomEnums, final int iterationCount) throws ParseException {
+		final double d = RANDOM_DOUBLES[iterationCount];
+		final double mult = d * enumSwitcher.switchForCase(randomEnums[iterationCount]);
+
+		return Double.doubleToLongBits(mult);
+	}
+
+	private long runMiddleIntEnumTest(final MiddleEnumSwitcher enumSwitcher, final MiddleIntegerEnum[] randomEnums, final int iterationCount) throws ParseException {
+		final double d = RANDOM_DOUBLES[iterationCount];
+		final double mult = d * enumSwitcher.switchForCase(randomEnums[iterationCount]);
+
+		return Double.doubleToLongBits(mult);
+	}
+
+	private long runSmallIntEnumTest(final SmallEnumSwitcher enumSwitcher, final SmallIntegerEnum[] randomEnums, final int iterationCount) throws ParseException {
+		final double d = RANDOM_DOUBLES[iterationCount];
+		final double mult = d * enumSwitcher.switchForCase(randomEnums[iterationCount]);
+
+		return Double.doubleToLongBits(mult);
+	}
+
+	private void runIntTestsForSwitcher(final SwitcherStatementType type, final int numCases) throws ParseException {
+		final IntSwitcher intSwitcher = INT_SWITCHERS.get(type)[numCases];
+		final long[] resultsBucket = INT_SWITCHER_RESULTS.get(type);
 
 		long result = resultsBucket[numCases];
 		for (int i = 0; i < NUM_ITERS; i++) {
 			for (int j = 0; j < TESTS_PER_ITER; j++) {
-				result += runTest(switcher, j);
+				result += runIntTest(intSwitcher, j);
 			}
 		}
 
 		resultsBucket[numCases] = result;
 	}
 
-	private void switchCasesOnType(final SwitcherStatementType type, final int numCases) {
+	private void runIntEnumTestsForEnumSize(final EnumSize enumSize, final int numCases) throws ParseException {
+		if (numCases > (enumSize.maxNumCases() - 1))
+			return;
+
+		if (enumSize == EnumSize.BIG) {
+
+			BigEnumSwitcher bigEnumSwitcher = (BigEnumSwitcher) ENUM_SWITCHERS.get(enumSize)[numCases];
+			final long[] resultsBucket = ENUM_SWITCHER_RESULTS.get(enumSize);
+
+			long result = resultsBucket[numCases];
+			for (int i = 0; i < NUM_ITERS; i++) {
+				for (int j = 0; j < TESTS_PER_ITER; j++) {
+					result += runBigIntEnumTest(bigEnumSwitcher, RANDOM_BIG_INT_ENUMS, j);
+				}
+			}
+
+			resultsBucket[numCases] = result;
+		} else if (enumSize == EnumSize.MIDDLE) {
+			MiddleEnumSwitcher middleEnumSwitcher = (MiddleEnumSwitcher) ENUM_SWITCHERS.get(enumSize)[numCases];
+			final long[] resultsBucket = ENUM_SWITCHER_RESULTS.get(enumSize);
+
+			long result = resultsBucket[numCases];
+			for (int i = 0; i < NUM_ITERS; i++) {
+				for (int j = 0; j < TESTS_PER_ITER; j++) {
+					result += runMiddleIntEnumTest(middleEnumSwitcher, RANDOM_MIDDLE_INT_ENUMS, j);
+				}
+			}
+
+			resultsBucket[numCases] = result;
+		} else if (enumSize == EnumSize.SMALL) {
+			SmallEnumSwitcher smallEnumSwitcher = (SmallEnumSwitcher) ENUM_SWITCHERS.get(enumSize)[numCases];
+			final long[] resultsBucket = ENUM_SWITCHER_RESULTS.get(enumSize);
+
+			long result = resultsBucket[numCases];
+			for (int i = 0; i < NUM_ITERS; i++) {
+				for (int j = 0; j < TESTS_PER_ITER; j++) {
+					result += runSmallIntEnumTest(smallEnumSwitcher, RANDOM_SMALL_INT_ENUMS, j);
+				}
+			}
+
+			resultsBucket[numCases] = result;
+		}
+	}
+
+	private void switchIntCasesOnType(final SwitcherStatementType type, final int numCases) {
 		if (numCases < MAX_POWER)
 			return;
 
 		try {
-			runTestsForSwitcher(type, numCases);
+			runIntTestsForSwitcher(type, numCases);
 		} catch (ParseException e) {
 			System.out.println("ParseException" + e.getMessage());
 		}
 	}
 
 	private void intSwitchCases(final int numCases) {
-		switchCasesOnType(SwitcherStatementType.INT_SWITCH, numCases);
+		switchIntCasesOnType(SwitcherStatementType.INT_SWITCH, numCases);
 	}
 
 	private void arraySwitchCases(final int numCases) {
-		switchCasesOnType(SwitcherStatementType.ARRAY, numCases);
+		switchIntCasesOnType(SwitcherStatementType.ARRAY, numCases);
+	}
+
+	private void bigIntEnumSwitchCases(final int numCases) {
+		if (numCases < MAX_POWER)
+			return;
+
+		try {
+			runIntEnumTestsForEnumSize(EnumSize.BIG, numCases);
+		} catch (ParseException e) {
+			System.out.println("ParseException" + e.getMessage());
+		}
+	}
+
+	private void middleIntEnumSwitchCases(final int numCases) {
+		if (numCases < MAX_POWER)
+			return;
+
+		try {
+			runIntEnumTestsForEnumSize(EnumSize.MIDDLE, numCases);
+		} catch (ParseException e) {
+			System.out.println("ParseException" + e.getMessage());
+		}
+	}
+
+	private void smallIntEnumSwitchCases(final int numCases) {
+		if (numCases < MAX_POWER)
+			return;
+
+		try {
+			runIntEnumTestsForEnumSize(EnumSize.SMALL, numCases);
+		} catch (ParseException e) {
+			System.out.println("ParseException" + e.getMessage());
+		}
 	}
 
 	@AfterClass
 	public static void printResultToPreventOptimization() {
+		final ArrayFunctionOnLongIndexedElements printLong = new ArrayFunctionOnLongIndexedElements() {
+			@Override
+			public void f(int index, long e) {
+				System.out.print(index + "=" + e +", ");
+			}
+		};
+
 		System.out.println("Tests finished.");
-		for (SwitcherStatementType type : results.keySet()) {
-			System.out.print("RESULTS FOR TYPE: " + type + ": ");
-			final long[] resultsForType = results.get(type);
-			ArraysHelper.forEach(resultsForType, new ArrayFunctionOnLongIndexedElements() {
-				@Override
-				public final void f(int index, long e) {
-					System.out.print(index + "=" + e +", ");
-				}
-			});
+		for (SwitcherStatementType type : INT_SWITCHER_RESULTS.keySet()) {
+			System.out.print("INT_SWITCHER_RESULTS FOR TYPE: " + type + ": ");
+			final long[] resultsForType = INT_SWITCHER_RESULTS.get(type);
+			ArraysHelper.forEach(resultsForType, printLong);
 		}
+
 		System.out.println();
 
-		for (SwitcherStatementType type : results.keySet()) {
-			final long[] resultsByNumCases = results.get(type);
+		for (EnumSize size : ENUM_SWITCHER_RESULTS.keySet()) {
+			System.out.println("ENUM_SWITCHER_RESULTS FOR TYPE: " + size + ": ");
+			final long[] resultsForType = ENUM_SWITCHER_RESULTS.get(size);
+			ArraysHelper.forEach(resultsForType, printLong);
+		}
+
+		System.out.println();
+
+		for (SwitcherStatementType type : INT_SWITCHER_RESULTS.keySet()) {
+			final long[] resultsByNumCases = INT_SWITCHER_RESULTS.get(type);
 			final long baseResult = resultsByNumCases[MAX_NUM_CASES];
 			ArraysHelper.forEach(resultsByNumCases, new ArrayFunctionOnLongIndexedElements() {
 				@Override
@@ -169,6 +361,22 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 					} catch (AssertionFailedError error) {
 						System.out.println("Bad result at index = " + index + " with result=" + e + " != baseResult=" + baseResult);
 						throw error;
+					}
+				}
+			});
+		}
+
+		for (EnumSize type : ENUM_SWITCHER_RESULTS.keySet()) {
+			final long[] resultsByNumCases = ENUM_SWITCHER_RESULTS.get(type);
+			final long baseResult = resultsByNumCases[MAX_NUM_CASES];
+			ArraysHelper.forEach(resultsByNumCases, new ArrayFunctionOnLongIndexedElements() {
+				@Override
+				public void f(int index, long e) {
+					try {
+						if (index >= MAX_POWER)
+							Assert.assertEquals(e, baseResult);
+					} catch (AssertionFailedError error) {
+						System.out.println("Bad result at index = " + index + " with result=" + e + " != baseResult=" + baseResult);
 					}
 				}
 			});
@@ -503,5 +711,500 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 	@Test
 	public void arraySwitch0cases() {
 		arraySwitchCases(0);
+	}
+
+	@Test
+	public void bigIntEnumSwitch32cases() {
+		bigIntEnumSwitchCases(32);
+	}
+
+	@Test
+	public void bigIntEnumSwitch31cases() {
+		bigIntEnumSwitchCases(31);
+	}
+
+	@Test
+	public void bigIntEnumSwitch30cases() {
+		bigIntEnumSwitchCases(30);
+	}
+
+	@Test
+	public void bigIntEnumSwitch29cases() {
+		bigIntEnumSwitchCases(29);
+	}
+
+	@Test
+	public void bigIntEnumSwitch28cases() {
+		bigIntEnumSwitchCases(28);
+	}
+
+	@Test
+	public void bigIntEnumSwitch27cases() {
+		bigIntEnumSwitchCases(27);
+	}
+
+	@Test
+	public void bigIntEnumSwitch26cases() {
+		bigIntEnumSwitchCases(26);
+	}
+
+	@Test
+	public void bigIntEnumSwitch25cases() {
+		bigIntEnumSwitchCases(25);
+	}
+
+	@Test
+	public void bigIntEnumSwitch24cases() {
+		bigIntEnumSwitchCases(24);
+	}
+
+	@Test
+	public void bigIntEnumSwitch23cases() {
+		bigIntEnumSwitchCases(23);
+	}
+
+	@Test
+	public void bigIntEnumSwitch22cases() {
+		bigIntEnumSwitchCases(22);
+	}
+
+	@Test
+	public void bigIntEnumSwitch21cases() {
+		bigIntEnumSwitchCases(21);
+	}
+
+	@Test
+	public void bigIntEnumSwitch20cases() {
+		bigIntEnumSwitchCases(20);
+	}
+
+	@Test
+	public void bigIntEnumSwitch19cases() {
+		bigIntEnumSwitchCases(19);
+	}
+
+	@Test
+	public void bigIntEnumSwitch18cases() {
+		bigIntEnumSwitchCases(18);
+	}
+
+	@Test
+	public void bigIntEnumSwitch17cases() {
+		bigIntEnumSwitchCases(17);
+	}
+
+	@Test
+	public void bigIntEnumSwitch16cases() {
+		bigIntEnumSwitchCases(16);
+	}
+
+	@Test
+	public void bigIntEnumSwitch15cases() {
+		bigIntEnumSwitchCases(15);
+	}
+
+	@Test
+	public void bigIntEnumSwitch14cases() {
+		bigIntEnumSwitchCases(14);
+	}
+
+	@Test
+	public void bigIntEnumSwitch13cases() {
+		bigIntEnumSwitchCases(13);
+	}
+
+	@Test
+	public void bigIntEnumSwitch12cases() {
+		bigIntEnumSwitchCases(12);
+	}
+
+	@Test
+	public void bigIntEnumSwitch11cases() {
+		bigIntEnumSwitchCases(11);
+	}
+
+	@Test
+	public void bigIntEnumSwitch10cases() {
+		bigIntEnumSwitchCases(10);
+	}
+
+	@Test
+	public void bigIntEnumSwitch9cases() {
+		bigIntEnumSwitchCases(9);
+	}
+
+	@Test
+	public void bigIntEnumSwitch8cases() {
+		bigIntEnumSwitchCases(8);
+	}
+
+	@Test
+	public void bigIntEnumSwitch7cases() {
+		bigIntEnumSwitchCases(7);
+	}
+
+	@Test
+	public void bigIntEnumSwitch6cases() {
+		bigIntEnumSwitchCases(6);
+	}
+
+	@Test
+	public void bigIntEnumSwitch5cases() {
+		bigIntEnumSwitchCases(5);
+	}
+
+	@Test
+	public void bigIntEnumSwitch4cases() {
+		bigIntEnumSwitchCases(4);
+	}
+
+	@Test
+	public void bigIntEnumSwitch3cases() {
+		bigIntEnumSwitchCases(3);
+	}
+
+	@Test
+	public void bigIntEnumSwitch2cases() {
+		bigIntEnumSwitchCases(2);
+	}
+
+	@Test
+	public void bigIntEnumSwitch1cases() {
+		bigIntEnumSwitchCases(1);
+	}
+
+	@Test
+	public void bigIntEnumSwitch0cases() {
+		bigIntEnumSwitchCases(0);
+	}
+
+	@Test
+	public void middleIntEnumSwitch32cases() {
+		middleIntEnumSwitchCases(32);
+	}
+
+	@Test
+	public void middleIntEnumSwitch31cases() {
+		middleIntEnumSwitchCases(31);
+	}
+
+	@Test
+	public void middleIntEnumSwitch30cases() {
+		middleIntEnumSwitchCases(30);
+	}
+
+	@Test
+	public void middleIntEnumSwitch29cases() {
+		middleIntEnumSwitchCases(29);
+	}
+
+	@Test
+	public void middleIntEnumSwitch28cases() {
+		middleIntEnumSwitchCases(28);
+	}
+
+	@Test
+	public void middleIntEnumSwitch27cases() {
+		middleIntEnumSwitchCases(27);
+	}
+
+	@Test
+	public void middleIntEnumSwitch26cases() {
+		middleIntEnumSwitchCases(26);
+	}
+
+	@Test
+	public void middleIntEnumSwitch25cases() {
+		middleIntEnumSwitchCases(25);
+	}
+
+	@Test
+	public void middleIntEnumSwitch24cases() {
+		middleIntEnumSwitchCases(24);
+	}
+
+	@Test
+	public void middleIntEnumSwitch23cases() {
+		middleIntEnumSwitchCases(23);
+	}
+
+	@Test
+	public void middleIntEnumSwitch22cases() {
+		middleIntEnumSwitchCases(22);
+	}
+
+	@Test
+	public void middleIntEnumSwitch21cases() {
+		middleIntEnumSwitchCases(21);
+	}
+
+	@Test
+	public void middleIntEnumSwitch20cases() {
+		middleIntEnumSwitchCases(20);
+	}
+
+	@Test
+	public void middleIntEnumSwitch19cases() {
+		middleIntEnumSwitchCases(19);
+	}
+
+	@Test
+	public void middleIntEnumSwitch18cases() {
+		middleIntEnumSwitchCases(18);
+	}
+
+	@Test
+	public void middleIntEnumSwitch17cases() {
+		middleIntEnumSwitchCases(17);
+	}
+
+	@Test
+	public void middleIntEnumSwitch16cases() {
+		middleIntEnumSwitchCases(16);
+	}
+
+	@Test
+	public void middleIntEnumSwitch15cases() {
+		middleIntEnumSwitchCases(15);
+	}
+
+	@Test
+	public void middleIntEnumSwitch14cases() {
+		middleIntEnumSwitchCases(14);
+	}
+
+	@Test
+	public void middleIntEnumSwitch13cases() {
+		middleIntEnumSwitchCases(13);
+	}
+
+	@Test
+	public void middleIntEnumSwitch12cases() {
+		middleIntEnumSwitchCases(12);
+	}
+
+	@Test
+	public void middleIntEnumSwitch11cases() {
+		middleIntEnumSwitchCases(11);
+	}
+
+	@Test
+	public void middleIntEnumSwitch10cases() {
+		middleIntEnumSwitchCases(10);
+	}
+
+	@Test
+	public void middleIntEnumSwitch9cases() {
+		middleIntEnumSwitchCases(9);
+	}
+
+	@Test
+	public void middleIntEnumSwitch8cases() {
+		middleIntEnumSwitchCases(8);
+	}
+
+	@Test
+	public void middleIntEnumSwitch7cases() {
+		middleIntEnumSwitchCases(7);
+	}
+
+	@Test
+	public void middleIntEnumSwitch6cases() {
+		middleIntEnumSwitchCases(6);
+	}
+
+	@Test
+	public void middleIntEnumSwitch5cases() {
+		middleIntEnumSwitchCases(5);
+	}
+
+	@Test
+	public void middleIntEnumSwitch4cases() {
+		middleIntEnumSwitchCases(4);
+	}
+
+	@Test
+	public void middleIntEnumSwitch3cases() {
+		middleIntEnumSwitchCases(3);
+	}
+
+	@Test
+	public void middleIntEnumSwitch2cases() {
+		middleIntEnumSwitchCases(2);
+	}
+
+	@Test
+	public void middleIntEnumSwitch1cases() {
+		middleIntEnumSwitchCases(1);
+	}
+
+	@Test
+	public void middleIntEnumSwitch0cases() {
+		middleIntEnumSwitchCases(0);
+	}
+
+	@Test
+	public void smallIntEnumSwitch32cases() {
+		smallIntEnumSwitchCases(32);
+	}
+
+	@Test
+	public void smallIntEnumSwitch31cases() {
+		smallIntEnumSwitchCases(31);
+	}
+
+	@Test
+	public void smallIntEnumSwitch30cases() {
+		smallIntEnumSwitchCases(30);
+	}
+
+	@Test
+	public void smallIntEnumSwitch29cases() {
+		smallIntEnumSwitchCases(29);
+	}
+
+	@Test
+	public void smallIntEnumSwitch28cases() {
+		smallIntEnumSwitchCases(28);
+	}
+
+	@Test
+	public void smallIntEnumSwitch27cases() {
+		smallIntEnumSwitchCases(27);
+	}
+
+	@Test
+	public void smallIntEnumSwitch26cases() {
+		smallIntEnumSwitchCases(26);
+	}
+
+	@Test
+	public void smallIntEnumSwitch25cases() {
+		smallIntEnumSwitchCases(25);
+	}
+
+	@Test
+	public void smallIntEnumSwitch24cases() {
+		smallIntEnumSwitchCases(24);
+	}
+
+	@Test
+	public void smallIntEnumSwitch23cases() {
+		smallIntEnumSwitchCases(23);
+	}
+
+	@Test
+	public void smallIntEnumSwitch22cases() {
+		smallIntEnumSwitchCases(22);
+	}
+
+	@Test
+	public void smallIntEnumSwitch21cases() {
+		smallIntEnumSwitchCases(21);
+	}
+
+	@Test
+	public void smallIntEnumSwitch20cases() {
+		smallIntEnumSwitchCases(20);
+	}
+
+	@Test
+	public void smallIntEnumSwitch19cases() {
+		smallIntEnumSwitchCases(19);
+	}
+
+	@Test
+	public void smallIntEnumSwitch18cases() {
+		smallIntEnumSwitchCases(18);
+	}
+
+	@Test
+	public void smallIntEnumSwitch17cases() {
+		smallIntEnumSwitchCases(17);
+	}
+
+	@Test
+	public void smallIntEnumSwitch16cases() {
+		smallIntEnumSwitchCases(16);
+	}
+
+	@Test
+	public void smallIntEnumSwitch15cases() {
+		smallIntEnumSwitchCases(15);
+	}
+
+	@Test
+	public void smallIntEnumSwitch14cases() {
+		smallIntEnumSwitchCases(14);
+	}
+
+	@Test
+	public void smallIntEnumSwitch13cases() {
+		smallIntEnumSwitchCases(13);
+	}
+
+	@Test
+	public void smallIntEnumSwitch12cases() {
+		smallIntEnumSwitchCases(12);
+	}
+
+	@Test
+	public void smallIntEnumSwitch11cases() {
+		smallIntEnumSwitchCases(11);
+	}
+
+	@Test
+	public void smallIntEnumSwitch10cases() {
+		smallIntEnumSwitchCases(10);
+	}
+
+	@Test
+	public void smallIntEnumSwitch9cases() {
+		smallIntEnumSwitchCases(9);
+	}
+
+	@Test
+	public void smallIntEnumSwitch8cases() {
+		smallIntEnumSwitchCases(8);
+	}
+
+	@Test
+	public void smallIntEnumSwitch7cases() {
+		smallIntEnumSwitchCases(7);
+	}
+
+	@Test
+	public void smallIntEnumSwitch6cases() {
+		smallIntEnumSwitchCases(6);
+	}
+
+	@Test
+	public void smallIntEnumSwitch5cases() {
+		smallIntEnumSwitchCases(5);
+	}
+
+	@Test
+	public void smallIntEnumSwitch4cases() {
+		smallIntEnumSwitchCases(4);
+	}
+
+	@Test
+	public void smallIntEnumSwitch3cases() {
+		smallIntEnumSwitchCases(3);
+	}
+
+	@Test
+	public void smallIntEnumSwitch2cases() {
+		smallIntEnumSwitchCases(2);
+	}
+
+	@Test
+	public void smallIntEnumSwitch1cases() {
+		smallIntEnumSwitchCases(1);
+	}
+
+	@Test
+	public void smallIntEnumSwitch0cases() {
+		smallIntEnumSwitchCases(0);
 	}
 }
