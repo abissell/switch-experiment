@@ -3,6 +3,9 @@ switch-experiment
 
 Java source code for micro benchmark tests yielding strange results when switching on int
 
+See discussion on related stackoverflow performance question:
+http://stackoverflow.com/questions/15621083/why-does-java-switch-on-ordinal-ints-appear-to-run-faster-with-added-cases
+
 Copyright [2013] [Crom Trading, LLC]
 
    Licensed under the Apache License, Version 2.0 (the "License");
