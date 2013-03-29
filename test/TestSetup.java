@@ -3,7 +3,7 @@ import java.util.Random;
 import java.util.Set;
 
 enum TestSetup {
-	MOST_CASES_TO_LEAST(50, 1000, 9, false),
+	MOST_CASES_TO_LEAST(5000, 1000, 9, false),
 	LEAST_CASES_TO_MOST(5000, 1000, 9, false);
 
 	private final int testsPerIteration;

@@ -337,17 +337,15 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			System.out.print("INT_SWITCHER_RESULTS FOR TYPE: " + type + ": ");
 			final long[] resultsForType = INT_SWITCHER_RESULTS.get(type);
 			ArraysHelper.forEach(resultsForType, printLong);
+			System.out.println();
 		}
-
-		System.out.println();
 
 		for (EnumSize size : ENUM_SWITCHER_RESULTS.keySet()) {
-			System.out.println("ENUM_SWITCHER_RESULTS FOR TYPE: " + size + ": ");
+			System.out.print("ENUM_SWITCHER_RESULTS FOR TYPE: " + size + ": ");
 			final long[] resultsForType = ENUM_SWITCHER_RESULTS.get(size);
 			ArraysHelper.forEach(resultsForType, printLong);
+			System.out.println();
 		}
-
-		System.out.println();
 
 		for (SwitcherStatementType type : INT_SWITCHER_RESULTS.keySet()) {
 			final long[] resultsByNumCases = INT_SWITCHER_RESULTS.get(type);
@@ -366,14 +364,15 @@ public class TestSwitchingForPowersOfTen extends AbstractBenchmark {
 			});
 		}
 
-		for (EnumSize type : ENUM_SWITCHER_RESULTS.keySet()) {
+		for (final EnumSize type : ENUM_SWITCHER_RESULTS.keySet()) {
 			final long[] resultsByNumCases = ENUM_SWITCHER_RESULTS.get(type);
-			final long baseResult = resultsByNumCases[MAX_NUM_CASES];
+			final long baseResult = resultsByNumCases[Math.min(MAX_NUM_CASES, type.maxNumCases() - 1)];
+
 			ArraysHelper.forEach(resultsByNumCases, new ArrayFunctionOnLongIndexedElements() {
 				@Override
 				public void f(int index, long e) {
 					try {
-						if (index >= MAX_POWER)
+						if (index >= MAX_POWER && index < type.maxNumCases())
 							Assert.assertEquals(e, baseResult);
 					} catch (AssertionFailedError error) {
 						System.out.println("Bad result at index = " + index + " with result=" + e + " != baseResult=" + baseResult);
