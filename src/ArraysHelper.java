@@ -7,6 +7,12 @@ enum ArraysHelper {
 		}
 	}
 
+	public static <E> void fill(final E[] array, final ArrayFillFunction<? extends E> func, final int from, final int to) {
+		for (int i = from; i < to; ++i) {
+			array[i] = func.getElementForIndex(i);
+		}
+	}
+
 	public static void fillIntArray(final int[] array, final ArrayFillFunction<Integer> func) {
 		for (int i = 0; i < array.length; ++i) {
 			array[i] = func.getElementForIndex(i);

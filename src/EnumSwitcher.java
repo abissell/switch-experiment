@@ -1,3 +1,3 @@
-interface EnumSwitcher {
+interface EnumSwitcher extends Switcher {
 
 }
