@@ -3,10 +3,10 @@ switch-experiment
 
 Java source code for micro benchmark tests yielding strange results when switching on int
 
-See discussion on related stackoverflow performance question:
+See discussion on related StackOverflow performance question:
 http://stackoverflow.com/questions/15621083/why-does-java-switch-on-ordinal-ints-appear-to-run-faster-with-added-cases
 
-Oracle engineers have considered changing a HotSpot compiler flag default value as a result of the question:
+Oracle engineers have considered changing a HotSpot compiler flag default value as a result of the SO discussion:
 http://mail.openjdk.java.net/pipermail/hotspot-compiler-dev/2013-May/010670.html
 
 Copyright 2013 Andrew Bissell
