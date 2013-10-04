@@ -6,8 +6,8 @@ Java source code for micro benchmark tests yielding strange results when switchi
 See discussion on related StackOverflow performance question:
 http://stackoverflow.com/questions/15621083/why-does-java-switch-on-ordinal-ints-appear-to-run-faster-with-added-cases
 
-Oracle engineers have considered changing a HotSpot compiler flag default value as a result of the SO discussion:
-http://mail.openjdk.java.net/pipermail/hotspot-compiler-dev/2013-May/010670.html
+Oracle engineers have lowered the minimum generated jump table size in HotSpot as a result of the SO discussion:
+http://hg.openjdk.java.net/jdk8/jdk8/hotspot/rev/34bd5e86aadb
 
 Copyright 2013 Andrew Bissell
 
